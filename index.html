@@ -1,0 +1,414 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة أبجد وحساب الجمل</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  background: linear-gradient(135deg, #102b23, #183c30, #0b1c18);
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container {
+  max-width: 760px;
+  margin: 25px auto;
+  background: #fff;
+  color: #183c30;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 10px 35px #0005;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+header h1 {
+  color: #a47b28;
+  margin-bottom: 10px;
+}
+
+header p { line-height: 1.8; }
+
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 13px;
+  font-size: 16px;
+}
+
+.tabs button {
+  flex: 1;
+  background: #e8eee9;
+  color: #183c30;
+}
+
+.tabs button.active {
+  background: #183c30;
+  color: white;
+}
+
+textarea, input {
+  width: 100%;
+  padding: 15px;
+  border: 2px solid #d6dfd8;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 19px;
+  margin: 10px 0;
+  outline-color: #a47b28;
+}
+
+textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.main-btn {
+  width: 100%;
+  background: #a47b28;
+  color: white;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.secondary-btn {
+  background: #183c30;
+  color: white;
+  margin-top: 10px;
+}
+
+.result {
+  margin-top: 20px;
+  padding: 18px;
+  background: #f2f6f2;
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+
+.result h3 { color: #a47b28; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  background: white;
+}
+
+th, td {
+  border: 1px solid #dce4dd;
+  padding: 12px 6px;
+  text-align: center;
+}
+
+th {
+  background: #183c30;
+  color: white;
+}
+
+.total {
+  font-size: 26px;
+  font-weight: bold;
+  color: #a47b28;
+  text-align: center;
+  padding: 15px;
+}
+
+.highest {
+  background: #fff0cc;
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 12px;
+  line-height: 2;
+}
+
+.note {
+  color: #64736a;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.hidden { display: none; }
+
+footer {
+  text-align: center;
+  margin-top: 25px;
+  font-size: 13px;
+  color: #a47b28;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h1>حَاسِبَةُ أَبْجَدْ هَوَّزْ</h1>
+  <p>برنامج حساب الجُمَّل وتحويل الحروف إلى أرقام والأرقام إلى حروف</p>
+</header>
+
+<div class="tabs">
+  <button id="tabName" class="active"
+    onclick="showTab('name')">الاسم إلى أرقام</button>
+  <button id="tabNumber"
+    onclick="showTab('number')">الأرقام إلى حروف</button>
+</div>
+
+<section id="nameSection">
+  <label for="nameInput"><b>اكتب الاسم أو العبارة:</b></label>
+  <textarea id="nameInput"
+    placeholder="مثال: محمد"></textarea>
+
+  <button class="main-btn" onclick="calculateName()">
+    احسب القيم والمجموع
+  </button>
+
+  <div id="nameResult" class="result hidden"></div>
+</section>
+
+<section id="numberSection" class="hidden">
+  <label for="numberInput"><b>اكتب الرقم:</b></label>
+  <input id="numberInput" type="text"
+    inputmode="numeric" placeholder="مثال: 92">
+
+  <button class="main-btn" onclick="convertNumber()">
+    حوّل الرقم إلى حروف
+  </button>
+
+  <div id="numberResult" class="result hidden"></div>
+
+  <p class="note">
+    التحويل هنا يفكك الرقم إلى قيم حروف أبجد بطريقة تنازلية،
+    ولا يعني بالضرورة أنه الاسم الوحيد الذي يعطي ذلك المجموع.
+  </p>
+</section>
+
+<footer>
+  إعداد وبرمجة: وائل دهشان
+  <br>
+  رِواق الفن العربي
+</footer>
+</div>
+
+<script>
+const values = {
+  "ا":1, "أ":1, "إ":1, "آ":1, "ٱ":1,
+  "ب":2, "ج":3, "د":4, "ه":5, "ة":5,
+  "و":6, "ز":7, "ح":8, "ط":9,
+  "ي":10, "ى":10, "ك":20, "ل":30,
+  "م":40, "ن":50, "س":60, "ع":70,
+  "ف":80, "ص":90, "ق":100, "ر":200,
+  "ش":300, "ت":400, "ث":500, "خ":600,
+  "ذ":700, "ض":800, "ظ":900, "غ":1000
+};
+
+const letterNames = [
+  ["غ",1000], ["ظ",900], ["ض",800],
+  ["ذ",700], ["خ",600], ["ث",500],
+  ["ت",400], ["ش",300], ["ر",200],
+  ["ق",100], ["ص",90], ["ف",80],
+  ["ع",70], ["س",60], ["ن",50],
+  ["م",40], ["ل",30], ["ك",20],
+  ["ي",10], ["ط",9], ["ح",8],
+  ["ز",7], ["و",6], ["ه",5],
+  ["د",4], ["ج",3], ["ب",2], ["ا",1]
+];
+
+function showTab(tab) {
+  document.getElementById("nameSection").classList.toggle(
+    "hidden", tab !== "name");
+  document.getElementById("numberSection").classList.toggle(
+    "hidden", tab !== "number");
+
+  document.getElementById("tabName").classList.toggle(
+    "active", tab === "name");
+  document.getElementById("tabNumber").classList.toggle(
+    "active", tab === "number");
+}
+
+function calculateName() {
+  const name = document.getElementById("nameInput").value.trim();
+  const result = document.getElementById("nameResult");
+
+  if (!name) {
+    alert("يرجى كتابة الاسم أولاً");
+    return;
+  }
+
+  let total = 0;
+  let rows = "";
+  let highest = -1;
+  let highestLetters = [];
+  let unknown = [];
+
+  for (const char of name) {
+    if (/\s/.test(char) || /[\u064B-\u065F\u0670]/.test(char)) {
+      continue;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(values, char)) {
+      const value = values[char];
+      total += value;
+
+      rows += `<tr>
+        <td>${escapeHTML(char)}</td>
+        <td>${value}</td>
+      </tr>`;
+
+      if (value > highest) {
+        highest = value;
+        highestLetters = [char];
+      } else if (value === highest) {
+        highestLetters.push(char);
+      }
+    } else {
+      unknown.push(char);
+    }
+  }
+
+  if (highest === -1) {
+    alert("لم يتم العثور على حروف عربية معروفة");
+    return;
+  }
+
+  let warning = unknown.length
+    ? `<p class="note">حروف لم تُحسب وفق الجدول:
+       ${escapeHTML([...new Set(unknown)].join("، "))}</p>`
+    : "";
+
+  result.innerHTML = `
+    <h3>تفصيل حروف الاسم</h3>
+    <table>
+      <thead><tr><th>الحرف</th><th>القيمة</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+
+    <div class="total">
+      المجموع: ${total}
+    </div>
+
+    <div class="highest">
+      <b>أعلى حرف قيمةً في الاسم:</b><br>
+      ${[...new Set(highestLetters)].map(escapeHTML).join("، ")}
+      <br>
+      <b>قيمته:</b> ${highest}
+    </div>
+    ${warning}
+    <button class="secondary-btn" onclick="copyNameResult()">
+      نسخ النتيجة
+    </button>
+  `;
+
+  result.classList.remove("hidden");
+  window.lastNameResult =
+    `الاسم: ${name}\nالمجموع: ${total}\n` +
+    `أعلى حرف قيمة: ${[...new Set(highestLetters)].join("، ")} ` +
+    `وقيمته ${highest}`;
+}
+
+function convertNumber() {
+  const raw = document.getElementById("numberInput").value.trim();
+  const result = document.getElementById("numberResult");
+
+  if (!/^\d+$/.test(raw)) {
+    alert("يرجى إدخال أرقام صحيحة فقط");
+    return;
+  }
+
+  let number = Number(raw);
+
+  if (!Number.isSafeInteger(number) || number < 1 ||
+      number > 1000000) {
+    alert("أدخل رقماً من 1 إلى 1,000,000");
+    return;
+  }
+
+  const original = number;
+  let letters = [];
+  let breakdown = [];
+
+  for (const [letter, value] of letterNames) {
+    const count = Math.floor(number / value);
+
+    if (count > 0) {
+      letters.push(letter.repeat(count));
+      breakdown.push(`${letter} = ${value} × ${count}`);
+      number %= value;
+    }
+  }
+
+  result.innerHTML = `
+    <h3>نتيجة التحويل</h3>
+    <p>الرقم الأصلي: <b>${original}</b></p>
+    <div class="total">الحروف: ${letters.join("")}</div>
+    <p><b>تفصيل القيم:</b></p>
+    <p>${breakdown.join(" + ")}</p>
+    <p class="note">
+      هذه إحدى طرق تفكيك العدد إلى قيم أبجد، وليست استعادةً
+      مؤكدةً لكلمة أصلية.
+    </p>
+    <button class="secondary-btn"
+      onclick="copyText('${letters.join("")}')">
+      نسخ الحروف
+    </button>
+  `;
+
+  result.classList.remove("hidden");
+}
+
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  })[ch]);
+}
+
+function copyText(text) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(
+      () => alert("تم النسخ"),
+      () => fallbackCopy(text)
+    );
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+function fallbackCopy(text) {
+  const area = document.createElement("textarea");
+  area.value = text;
+  document.body.appendChild(area);
+  area.select();
+  try {
+    document.execCommand("copy");
+    alert("تم النسخ");
+  } catch (e) {
+    alert("تعذر النسخ تلقائياً، يرجى نسخ النص يدوياً");
+  }
+  area.remove();
+}
+
+function copyNameResult() {
+  copyText(window.lastNameResult || "");
+}
+</script>
+</body>
+</html>
