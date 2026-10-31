@@ -28,6 +28,18 @@ jobs:
           mkdir -p app/src/main/assets
           cp index.html app/src/main/assets/index.html
 
+      - name: Create launcher icons from icon-512.png
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq imagemagick
+          for pair in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            d=${pair%%:*}
+            px=${pair##*:}
+            mkdir -p app/src/main/res/mipmap-$d
+            convert icon-512.png -resize ${px}x${px} app/src/main/res/mipmap-$d/ic_launcher.png
+            cp app/src/main/res/mipmap-$d/ic_launcher.png app/src/main/res/mipmap-$d/ic_launcher_round.png
+          done
+
       - name: Build debug APK
         run: gradle assembleDebug --no-daemon
 
